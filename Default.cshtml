@@ -1,0 +1,150 @@
+﻿@using System.Text
+
+@{
+    // получить и сохранить Ip сетевой карты
+    //var server = Dns.GetHostName();
+    //IPHostEntry heserver = Dns.GetHostEntry(server);
+    //var currentIp = heserver.AddressList[1].ToString();
+    //Response.Cookies["currentIp"].Value = currentIp;
+    //Response.Cookies["currentIp"].Expires = DateTime.Now.AddYears(1);
+    var msg = "";
+    var ip = Request.Cookies["currentIp"] != null ? Request.Cookies["currentIp"].Value : "";
+
+    var output = new StringBuilder();
+
+    //if(IsPost){
+
+    //    if(!Request["ip"].IsEmpty()){
+
+    //        // установить новый IP
+    //        NetworkManagement.SetIP(Request["ip"]);
+    //        ip = Request["ip"];
+    //    }
+    //}
+
+    //// Enable UseUnsafeHeaderParsing
+    //if (!ToggleAllowUnsafeHeaderParsing(true))
+    //{
+    //    // Couldn't set flag. Log the fact, throw an exception or whatever.
+    //}
+
+    //// This request will now allow unsafe header parsing, i.e. GetResponse won't throw an exception.
+    //var request = (HttpWebRequest) WebRequest.Create("http://localhost:8000");
+    //var response = request.GetResponse();
+
+    //// Disable UseUnsafeHeaderParsing
+    //if (!ToggleAllowUnsafeHeaderParsing(false))
+    //{
+    //    // Couldn't change flag. Log the fact, throw an exception or whatever.
+    //}
+
+    //// This request won't allow unsafe header parsing, i.e. GetResponse will throw an exception.
+    //var strictHeaderRequest = (HttpWebRequest)WebRequest.Create("http://localhost:8000");
+    //var strictResponse = strictHeaderRequest.GetResponse();
+
+    // координаты для символа указываются для нижнего левого угла символа
+    // 0 --------------------------------- 63
+    //  |                                |
+    //  |                                |
+    //  |                                |
+    //  |                                |
+    //  |                                |
+    //31 ---------------------------------
+
+    if(IsPost){
+
+        if(!Request["test"].IsEmpty()){
+            for(int j=0; j<34; j++){
+                for(int i=0; i<64; i++){
+                    Functions.setCommand(ip, "command=print&text=.&fcolor=1&x=" + (i*2).ToString() + "&y=" + (j*2).ToString()+ "&font=1&interval=1"); 
+                    Functions.setCommand(ip, "command=outscr");
+                }               
+            }
+
+            Functions.setCommand(ip, "command=cls");
+            msg = Functions.setCommand(ip, "command=outscr");
+             
+        }  
+
+        if(!Request["text"].IsEmpty()){ 
+            Functions.setCommand(ip, "command=print&text=01&fcolor=1&x=0&y=9&font=1&interval=1");    
+            Functions.setCommand(ip, "command=print&text=A123&fcolor=2&x=18&y=25&font=2&interval=1"); 
+            msg = Functions.setCommand(ip, "command=outscr");              
+        }  
+        
+        if(!Request["clear"].IsEmpty()){ 
+            Functions.setCommand(ip, "command=cls"); 
+            msg = Functions.setCommand(ip, "command=outscr");              
+        }  
+
+        if(!Request["ip"].IsEmpty()){
+
+            Response.Cookies["currentIp"].Value = Request["ip"];
+            Response.Cookies["currentIp"].Expires = DateTime.Now.AddYears(1);
+            msg = Functions.setCommand(ip, "command=getinfo"); 
+        }
+
+        if(!Request["net_info"].IsEmpty()){
+            msg = Functions.setCommand(ip, "command=getinfo&info=net"); 
+        }
+
+    }
+
+    //}
+        //NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+        //foreach (NetworkInterface adapter in nics)
+        //{
+        //    IPInterfaceProperties properties = adapter.GetIPProperties();
+        //    UnicastIPAddressInformationCollection unicast = properties.UnicastAddresses;
+        //    foreach (IPAddressInformation uni in unicast)
+        //    {
+        //    this.LogString(uni.Address.ToString());
+        //    }
+        //    GatewayIPAddressInformationCollection gateway = properties.GatewayAddresses;
+        //    foreach (GatewayIPAddressInformation gate in gateway)
+        //    {
+        //    this.LogString(gate.Address.ToString());
+        //    }
+        //}
+
+    msg = msg.Replace('&', '\n');
+
+}
+
+<!DOCTYPE html>
+
+<html lang="ru">
+    <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta charset="utf-8" />
+        <title>DoCashTest</title>
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    </head>
+    <body>
+        <form method="post">
+            @Html.Label("ip-address табло")
+            @Html.TextBox("ip", ip)
+            <button>Установить связь</button>
+        </form>
+        <p>@msg</p>
+        @if(msg.Contains("Answer=OK")){
+
+            <form method="post">
+                 @Html.Hidden("net_info", true)
+                <button>Net info</button>
+            </form> 
+             <form method="post">
+                 @Html.Hidden("test", true)
+                <button>Тест</button>
+            </form> 
+            <form method="post">
+                 @Html.Hidden("text", true)
+                <button>Текст</button>
+            </form> 
+            <form method="post">
+                 @Html.Hidden("clear", true)
+                <button>Очистить</button>
+            </form>           
+        }
+    </body>
+</html>
